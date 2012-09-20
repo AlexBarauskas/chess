@@ -1,0 +1,22 @@
+.popup {
+    border: 1px solid #CCCCCC;
+    border-radius: 5px 5px 5px 5px;
+    box-shadow: 1px 1px 5px black;
+    margin: 0 auto;
+    padding: 20px 5px 0;
+    position: static;
+    margin-top: 10%;
+    width: 400px;
+    height:auto;
+}
+
+form, .form-actions{
+    margin:0;
+}
+
+.main-content {
+    margin-top:50px;
+    background-color:#EEE;
+    padding:40px;
+    border-radius:5px;
+}
