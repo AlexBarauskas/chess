@@ -46,6 +46,24 @@ class Turnir(models.Model):
         self.register = False
         self.save()
 
+    def render_table(self):
+        #parts = Participant.objects.filter(turnir=self).order_by('-rating')
+        N = self.participant_set.count()
+        table = [["<td> </td><td> </td>" for i in range(self.number_rounds)] for j in range(N/2+N%2)]
+        i = 1
+        games = Game.objects.filter(turnir=self, raund__number=i)
+        while games:
+            j = 0
+            for g in games:
+                table[j][i-1]='<td>%s / %s</td><td>%s</td>'%(g.participant1,g.participant2,g.winner)
+                j+=1
+            i+=1
+            games = Game.objects.filter(turnir=self, raund__number=i)
+        print "TAB:"
+        print table
+        tag = map(lambda x:'<tr>'+'\n'.join(x)+'</tr>',table)
+        print tag
+        return '\n'.join(tag)
     
 class Participant(models.Model):
     first_name = models.CharField(u'Имя',max_length=32,blank=False)
