@@ -116,7 +116,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
 )
 
-ROOT_URLCONF = 'wargaming.urls'
+ROOT_URLCONF = 'urls'
 
 TEMPLATE_DIRS = (
     os.path.join(PROJECT_ROOT, 'templates'),
@@ -134,7 +134,8 @@ INSTALLED_APPS = (
     'django.contrib.redirects',
 
     'bootstrap_toolkit_',
-    'turnir'
+    'turnir',
+    'account'
 )
 
 # A sample logging configuration. The only tangible logging

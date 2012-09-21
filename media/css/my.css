@@ -16,7 +16,11 @@ form, .form-actions{
 
 .main-content {
     margin-top:50px;
-    background-color:#EEE;
+    background-color:#F7F7F7;
     padding:40px;
     border-radius:5px;
+}
+
+.tab-box{
+    background:none;
 }

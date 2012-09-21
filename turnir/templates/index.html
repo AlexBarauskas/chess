@@ -19,7 +19,9 @@
   <tbody>
     {% for t in turnirs %}
     <tr>
-      <td>{{t.title}}</td>
+      <td>
+	<a href="{% url view-turnir t.id %}">{{t.title}}</a>
+      </td>
       <td>{{t.start}}</td>
       <td>{{t.stop}}</td>
     </tr>
