@@ -1,0 +1,16 @@
+<td>{{P1}} / {{P2}}</td>
+<td>
+  {% if W %}
+  {{W}}
+  <input type="hidden" name="game-{{game.id}}" value="{{W.id}}"/>
+  {% else %}
+  {% if game.raund.number == game.turnir.cur_raund_id %}
+  <select name="game-{{game.id}}" class="medium">
+    <option value="">Ничья</option>
+    <option value="{{P1.id}}">{{P1}}</option>
+    <option value="{{P2.id}}">{{P2}}</option>
+  {% else %}
+    Ничья
+  {% endif %}    
+  {% endif %}
+</td>

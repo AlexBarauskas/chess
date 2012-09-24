@@ -7,5 +7,5 @@ urlpatterns = patterns(
     url(r'^(?P<turnir_id>\d+)/$', 'view_turnir', name='view-turnir'),
 
     url(r'^(?P<turnir_id>\d+)/create-table$', 'generate_table', name='generate-table'),
-
+    url(r'^(?P<turnir_id>\d+)/save-raund$', 'generate_next_raund',name='save-raund'),
 )

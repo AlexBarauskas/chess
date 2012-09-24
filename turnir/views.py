@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 
-from turnir.models import Turnir
+from turnir.models import Turnir,Participant,Game
 from turnir.forms import AddTurnir, AddParticipant
 
 from account.decorators import referee_required
@@ -34,20 +34,50 @@ def add_turnir(request):
 
 def view_turnir(request,turnir_id):
     turnir = get_object_or_404(Turnir,id=turnir_id)
+    if turnir.raund_set.count() and turnir.raund_set.count()<turnir.cur_raund_id:
+        final = turnir.participant_set.all().order_by('position')
+    else:
+        final=[]
     return render_to_response('turnir-view.html',
-                              {'turnir':turnir},
+                              {'turnir':turnir,
+                               'tab':request.session.get('tab','participants'),
+                               'final':final},
                               RequestContext(request))
 
+@referee_required
 def generate_table(request,turnir_id):
     turnir = get_object_or_404(Turnir,id=turnir_id)
     turnir.create_table_raunds()
+    request.session['tab']='table'
     return HttpResponseRedirect(reverse('view-turnir',args=[turnir_id]))
 
 @referee_required
 def add_participant(request,turnir_id):
     turnir = get_object_or_404(Turnir,id=turnir_id)
+    request.session['tab']='participants'
     return base_add(request,AddParticipant,
                     reverse('view-turnir',args=[turnir_id]),
                     {'turnir':turnir})
 
-
+@referee_required
+def generate_next_raund(request,turnir_id):
+    if request.method=='POST':
+        for key in request.POST:
+            if key.startswith('game'):
+                w = request.POST[key]
+                g = get_object_or_404(Game,id=key.split('-')[1])
+                if not w:
+                    g.participant1.points+=0.5
+                    g.participant2.points+=0.5
+                    g.participant1.save()
+                    g.participant2.save()
+                else:
+                    p=get_object_or_404(Participant,id=w)
+                    g.winner = p
+                    g.save()
+                    p.points+=1
+                    p.save()
+        print get_object_or_404(Turnir,id=turnir_id).calc_next_round()
+    request.session['tab']='table'
+    return HttpResponseRedirect(reverse('view-turnir',args=[turnir_id]))
+    

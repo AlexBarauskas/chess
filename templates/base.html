@@ -24,6 +24,7 @@
 	  <a class="brand" href="http://wargaming.net" target="blank">Wargaming</a>
 	  <ul class="main-menu nav pull-right">
 	    <li class="active"><a href="{% url home %}">Главная страница</a></li>
+	    <li class="active"><a href="{% url list-turnirs %}">Турниры</a></li>
 	    {% if user.is_authenticated %}
 	    <li class="dropdown">
 	      <a class="dropdown-toggle" href="#" data-toggle="dropdown">{{user.email}} <b class="caret"></b></a>

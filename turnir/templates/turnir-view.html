@@ -11,35 +11,66 @@
 
 <div class="tab-box">
   <ul id="tabs" class="nav nav-tabs">
-    <li class="active"><a href="#participants" data-toggle="tab">Список участников</a></li>
-    <li><a href="#tur-table" data-toggle="tab">Турнирная таблица</a></li>
+    <li {% if tab == 'participants' %}class="active"{% endif %}><a href="#participants" data-toggle="tab">Список участников</a></li>
+    <li {% if tab == 'table' %}class="active"{% endif %}><a href="#tur-table" data-toggle="tab">Турнирная таблица</a></li>
   </ul>
 
   <div class="tab-content"> 
-    <div id="participants" class="active tab-pane">
+    <div id="participants" class="{% if tab == 'participants' %}active{% endif %} tab-pane">
       {% for p in turnir.participant_set.all%}
       {{p}} <br/>
       {% endfor %}
 
       <a class="btn btn-primary" href="{% url add-participant turnir.id %}">Добавить участника</a>
     </div>
-    <div id="tur-table" class="tab-pane">
+    <div id="tur-table" class="{% if tab == 'table' %}active{% endif %} tab-pane">
       {% if turnir.raund_set.count %}
+      <form method="POST" action="{% url save-raund turnir.id %}">
+	{% csrf_token %}
+	<table class="table table-hover">
+	  <thead>
+	    <tr>
+	      {% for r in turnir.raund_set.all %}
+	      <th>{{r}}</th>
+	      <th>
+		Победитель
+		{% if r.number == turnir.cur_raund_id %}
+		<button class="label label-important" title="Выбранные ниже победители будут сохранены. После чего сформируются игры следующего тура."> Сохранить </button>
+		{% endif %}
+	      </th>
+	      {% endfor %}
+	    </tr>
+	</thead>
+	  <tbody>
+	    {{turnir.render_table|safe}}
+	  </tbody>
+	</table>
+      </form>
+      {% else %}
+      <a class="btn btn-primary" href="{% url generate-table turnir.id %}">Генерировать турнирную таблицу</a>
+      {% endif %}
+
+      {% if turnir.raund_set.count < turnir.cur_raund_id %}
+      <h2>Финальные результаты</h2>
       <table class="table table-hover">
 	<thead>
 	  <tr>
-	    {% for r in turnir.raund_set.all %}
-	    <th>{{r}}</th>
-	    <th>Победитель</th>
-	    {% endfor %}
+	    <th>Место</th>
+	    <th>Участник</th>
+	    <th>Количество очков</th>
 	  </tr>
 	</thead>
 	<tbody>
-	  {{turnir.render_table|safe}}
+	  {% for p in final %}
+	  <tr>
+	    <td>{{p.position}}</td>
+	    <td>{{p}}</td>
+	    <td>{{p.points}}</td>
+	  </tr>
+	  {% endfor %}
 	</tbody>
       </table>
       {% endif %}
-      <a class="btn btn-primary" href="{% url generate-table turnir.id %}">Генерировать турнирную таблицу</a>
     </div>
   </div>
 </div>
