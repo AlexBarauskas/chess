@@ -52,7 +52,7 @@ def rand_parts(request,turnir_id):
         form = RandParticipants(request.POST)
         if form.is_valid():
             n = form.cleaned_data['n']
-            print 'N=%s'%n
+            #print 'N=%s'%n
             for i in xrange(n):
                 Participant(first_name='Участник',last_name=str(i),
                             rating=randint(1,2000),turnir=turnir).save()
@@ -83,7 +83,7 @@ def add_participant(request,turnir_id):
 def generate_next_raund(request,turnir_id):
     if request.method=='POST':
         for key in request.POST:
-            print request.POST
+            #print request.POST
             if key.startswith('game'):
                 w = request.POST[key]
                 g = get_object_or_404(Game,id=key.split('-')[1])
@@ -98,7 +98,7 @@ def generate_next_raund(request,turnir_id):
                     g.save()
                     p.points+=1
                     p.save()
-        print get_object_or_404(Turnir,id=turnir_id).calc_next_round()
+        get_object_or_404(Turnir,id=turnir_id).calc_next_round()
     request.session['tab']='table'
     return HttpResponseRedirect(reverse('view-turnir',args=[turnir_id]))
     
