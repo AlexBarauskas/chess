@@ -6,12 +6,11 @@ import math
 class Turnir(models.Model):
     title = models.CharField(u'Наименование',max_length=128,blank=False)
     description = models.TextField(u'Описание',blank=True)
-    
     start = models.DateTimeField(u'Начало турнира')
     stop = models.DateTimeField(u'Окончание турнира')
+    number_prizes = models.PositiveIntegerField(u'Количество призовых мест', default=3)
 
     number_rounds = models.PositiveIntegerField(u'Количество туров',null=True)
-    number_prizes = models.PositiveIntegerField(u'Количество призовых мест', default=3)
     registration = models.BooleanField(u'Допустима ли регистрация участников',default=True)
     cur_raund_id =  models.PositiveIntegerField(u'Номер текущего раунда', null=True)
     created = models.DateTimeField(auto_now_add=True)
@@ -127,7 +126,7 @@ class Participant(models.Model):
         verbose_name_plural = u'Участники'
 
     def __unicode__(self):
-        return '%s %s(%s)'%(self.first_name,self.last_name,self.points)
+        return '%s %s'%(self.first_name,self.last_name)
 
 class Raund(models.Model):
     turnir = models.ForeignKey(Turnir, null=False)

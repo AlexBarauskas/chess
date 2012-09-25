@@ -17,22 +17,39 @@
 
   <div class="tab-content"> 
     <div id="participants" class="{% if tab == 'participants' %}active{% endif %} tab-pane">
-      {% for p in turnir.participant_set.all%}
-      {{p}} <br/>
-      {% endfor %}
-
+      {% if turnir.participant_set.count %}
+      <table class="">
+	<thead>
+	  <tr>
+	    <th>Участник</th>
+	    <th>Рейтинг OLE</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for p in turnir.participant_set.all%}
+	  <tr>
+	    <td>{{p.first_name}} {{p.last_name}}</td>
+	    <td>{{p.rating}}</td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+      {% endif %}
+      {% if turnir.game_set.count == 0 and user.account.role == 's' %}
       <a class="btn btn-primary" href="{% url add-participant turnir.id %}">Добавить участника</a>
+      <a class="btn btn-primary" href="{% url rand-parts turnir.id %}">Генерировать случайных участников</a>
+      {% endif %}
     </div>
     <div id="tur-table" class="{% if tab == 'table' %}active{% endif %} tab-pane">
       {% if turnir.raund_set.count %}
       <form method="POST" action="{% url save-raund turnir.id %}">
 	{% csrf_token %}
-	<table class="table table-hover">
+	<table class="">
 	  <thead>
 	    <tr>
 	      {% for r in turnir.raund_set.all %}
 	      <th>{{r}}</th>
-	      <th>
+	      <th class="right-border">
 		Победитель
 		{% if r.number == turnir.cur_raund_id %}
 		<button class="label label-important" title="Выбранные ниже победители будут сохранены. После чего сформируются игры следующего тура."> Сохранить </button>

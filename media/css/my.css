@@ -24,3 +24,36 @@ form, .form-actions{
 .tab-box{
     background:none;
 }
+
+.right-border:last-child {
+    border-right: 1px solid #CCC !important;
+}
+
+.right-border {
+    border-right: 3px solid #888 !important;
+ 
+}
+
+
+table {
+    border: 1px solid #CCC !important;
+    border-radius: 5px;
+    width:100%;
+    margin-bottom:10px;
+}
+
+table th, table td {
+    border-left: 1px solid #CCC;
+    border-bottom: 1px solid #CCC !important;
+    border-right: 1px solid #CCC;
+    padding:8px;
+}
+
+.call-vs {
+    line-height: 14px;
+    text-align: center ;
+    vertical-align: middle;
+}
+.call-vs>b {
+    font-size: smaller;
+}
