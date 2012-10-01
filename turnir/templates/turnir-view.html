@@ -64,7 +64,15 @@
 	</table>
       </form>
       {% else %}
+      {% if turnir.participant_set.count > 1 and user.account.role == 's' %}
       <a class="btn btn-primary" href="{% url generate-table turnir.id %}">Генерировать турнирную таблицу</a>
+      {% else %}
+      {% if user.account.role == 's'%}
+      <div class="alert fade in">
+	Для генерации таблицы добавте как минимум двух участников турнира.
+      </div>
+      {% endif %}
+      {% endif %}
       {% endif %}
 
       {% if turnir.raund_set.count < turnir.cur_raund_id %}
@@ -75,6 +83,7 @@
 	    <th>Место</th>
 	    <th>Участник</th>
 	    <th>Количество очков</th>
+	    <th>Количество очков набранное соперниками</th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -83,6 +92,7 @@
 	    <td>{{p.position}}</td>
 	    <td>{{p}}</td>
 	    <td>{{p.points}}</td>
+	    <td>{{p.contestants_points}}</td>
 	  </tr>
 	  {% endfor %}
 	</tbody>

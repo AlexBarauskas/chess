@@ -4,6 +4,7 @@ from django.template.context import RequestContext
 from django.http import HttpResponse, HttpResponseRedirect, HttpResponseNotFound
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
+from django.db.models import Sum
 
 from turnir.models import Turnir,Participant,Game
 from turnir.forms import AddTurnir, AddParticipant, RandParticipants
@@ -37,7 +38,8 @@ def add_turnir(request):
 def view_turnir(request,turnir_id):
     turnir = get_object_or_404(Turnir,id=turnir_id)
     if turnir.raund_set.count() and turnir.raund_set.count()<turnir.cur_raund_id:
-        final = turnir.participant_set.all().order_by('position')[:turnir.number_prizes]
+        #final = turnir.participant_set.all().order_by('position')[:turnir.number_prizes].annotate(contestants_points=Sum('contestant__points'))
+        final = turnir.participant_set.all().order_by('position').annotate(contestants_points=Sum('contestant__points'))
     else:
         final=[]
     return render_to_response('turnir-view.html',
@@ -95,9 +97,9 @@ def generate_next_raund(request,turnir_id):
                 else:
                     p=get_object_or_404(Participant,id=w)
                     g.winner = p
-                    g.save()
                     p.points+=1
                     p.save()
+                g.save(update_rating=True)
         get_object_or_404(Turnir,id=turnir_id).calc_next_round()
     request.session['tab']='table'
     return HttpResponseRedirect(reverse('view-turnir',args=[turnir_id]))

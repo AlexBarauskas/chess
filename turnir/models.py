@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.db.models import Sum
 from django.template.loader import render_to_string
 import math
 
@@ -84,7 +85,8 @@ class Turnir(models.Model):
             
         elif self.cur_raund_id == self.number_rounds:
             self.cur_raund_id += 1
-            parts = self.participant_set.all().order_by('-points')
+            parts = self.participant_set.annotate(contestants_points=Sum('contestant__points')).order_by('-points','-contestants_points')
+            #self.participant_set.all().order_by('-points')
             i=1
             for p in parts:
                 p.position=i
@@ -120,6 +122,7 @@ class Participant(models.Model):
     rating = models.PositiveIntegerField(u'Рейтинг', default=0)
     points = models.FloatField(u'Очки набранные в турнире', default=0)
     position =  models.PositiveIntegerField(u'Место в турнире', default=0)
+    contestant = models.ManyToManyField('self',related_name="contestant+")
 
     class Meta:
         verbose_name = u'Участник'
@@ -147,5 +150,36 @@ class Game(models.Model):
     winner = models.ForeignKey(Participant, null=True,
                                      related_name='wins')
 
+    def K(self,rating):
+        if rating>2400:
+            return 10
+        elif rating>30:
+            return 15
+        else:
+            return 30
 
-    
+    def save(self,update_rating=False):
+        super(Game,self).save()       
+        if self.participant1 and self.participant2:
+            if update_rating:
+                R1 = self.participant1.rating 
+                R2 = self.participant2.rating
+                if not self.winner:
+                    p1 = 0.5
+                    p2 = 0.5
+                elif self.winner.id == self.participant1.id:
+                    p1 = 1.0
+                    p2 = 0.0
+                else:
+                    p1 = 0.0
+                    p2 = 1.0
+                E1 = 1.0/(1.0 + 10**((R2-R1)/400.0))
+                E2 = 1.0/(1.0 + 10**((R1-R2)/400.0))
+                self.participant1.rating = R1 + self.K(R1)*(p1 - E1)
+                self.participant2.rating = R2 + self.K(R1)*(p2 - E2)
+                self.participant1.save()
+                self.participant2.save()
+            else:
+                self.participant1.contestant.add(self.participant2)
+                self.participant2.contestant.add(self.participant1)
+
