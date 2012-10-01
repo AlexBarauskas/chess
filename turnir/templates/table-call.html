@@ -1,0 +1,23 @@
+<td class="call-vs">{{P1}}{%if P2%}<br/><b>vs</b><br/>{{P2}}{% endif %}</td>
+<td class="right-border">
+
+  {% if game.raund.number == game.turnir.cur_raund_id %}
+  {% if W %}
+  {{W}}
+  <input type="hidden" name="game-{{game.id}}" value="{{W.id}}"/>
+  {% else %}
+  <select name="game-{{game.id}}" class="medium">
+    <option value="">Ничья</option>
+    <option value="{{P1.id}}">{{P1}}</option>
+    <option value="{{P2.id}}">{{P2}}</option>
+    {% endif %}
+    
+  {% else %}
+    {% if W %}
+    {{W}}
+    {% else %}    
+    Ничья
+    {% endif %}
+
+  {% endif %}    
+</td>

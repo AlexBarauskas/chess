@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 from django.db import models
+from django.template.loader import render_to_string
 import math
 
 class Turnir(models.Model):
     title = models.CharField(u'Наименование',max_length=128,blank=False)
     description = models.TextField(u'Описание',blank=True)
-    
     start = models.DateTimeField(u'Начало турнира')
     stop = models.DateTimeField(u'Окончание турнира')
+    number_prizes = models.PositiveIntegerField(u'Количество призовых мест', default=3)
 
     number_rounds = models.PositiveIntegerField(u'Количество туров',null=True)
-    number_prizes = models.PositiveIntegerField(u'Количество призовых мест', default=3)
     registration = models.BooleanField(u'Допустима ли регистрация участников',default=True)
-
+    cur_raund_id =  models.PositiveIntegerField(u'Номер текущего раунда', null=True)
     created = models.DateTimeField(auto_now_add=True)
+    
     
     class Meta:
         verbose_name = u'Турнир'
@@ -30,6 +31,8 @@ class Turnir(models.Model):
         k = self.number_prizes
         M = sum( map(lambda x:[math.ceil(x)-1,math.ceil(x)][math.ceil(x)-x<=0.5],[math.log(N,2),math.log(k,2)]))
         self.number_rounds=M
+        Game.objects.filter(turnir=self, raund__number=1).delete()
+        Raund.objects.filter(turnir = self).delete()
         r=Raund(turnir = self, number = 1)
         r.save()
         if M>1:
@@ -44,7 +47,51 @@ class Turnir(models.Model):
             Game(turnir=self,raund=r,
                  participant1=parts[i],participant2=parts[N/2+i]).save()
         self.register = False
+        self.cur_raund_id = r.number
         self.save()
+
+    def calc_next_round(self):
+        if self.cur_raund_id<self.number_rounds:
+            self.cur_raund_id += 1
+            r=Raund.objects.get(turnir = self, number = self.cur_raund_id)
+            #r.save()
+            groups = []; gr=None
+            parts = Participant.objects.filter(turnir=self).order_by('-points','-rating')
+            while parts:
+                p = parts[0]
+                if gr:
+                    last_p = gr[len(gr)-1].id
+                else:
+                    last_p = None
+                gr = Participant.objects.filter(turnir=self, points=p.points).order_by('-points','-rating')
+                if last_p:
+                    gr = gr.exclude(id=last_p)
+                    
+                parts = Participant.objects.filter(turnir=self).filter(points__lt=p.points).order_by('-points','-rating')
+                if gr.count()%2 and parts.count():
+                    gr = list(gr)+[parts[0]]
+                    parts = parts[1:]
+                groups.append(gr)
+            for gr in groups:
+                N = len(gr)
+                for i in xrange(N/2):
+                    
+                    Game(turnir=self,raund=r,
+                         participant1=gr[i],participant2=gr[N/2+i]).save()
+                if N%2:
+                    Game(turnir=self,raund=r,
+                         participant1=gr[N-1],winner=gr[N-1]).save()
+            
+        elif self.cur_raund_id == self.number_rounds:
+            self.cur_raund_id += 1
+            parts = self.participant_set.all().order_by('-points')
+            i=1
+            for p in parts:
+                p.position=i
+                p.save()
+                i+=1
+        self.save()
+        
 
     def render_table(self):
         #parts = Participant.objects.filter(turnir=self).order_by('-rating')
@@ -55,14 +102,15 @@ class Turnir(models.Model):
         while games:
             j = 0
             for g in games:
-                table[j][i-1]='<td>%s / %s</td><td>%s</td>'%(g.participant1,g.participant2,g.winner)
+                table[j][i-1]=render_to_string('table-call.html',
+                                               {'P1':g.participant1,
+                                                'P2':g.participant2 or '',
+                                                'W':g.winner,
+                                                'game':g})
                 j+=1
             i+=1
             games = Game.objects.filter(turnir=self, raund__number=i)
-        print "TAB:"
-        print table
         tag = map(lambda x:'<tr>'+'\n'.join(x)+'</tr>',table)
-        print tag
         return '\n'.join(tag)
     
 class Participant(models.Model):
@@ -70,6 +118,8 @@ class Participant(models.Model):
     last_name = models.CharField(u'Фамилия',max_length=32,blank=False)
     turnir =  models.ForeignKey(Turnir, null=False)
     rating = models.PositiveIntegerField(u'Рейтинг', default=0)
+    points = models.FloatField(u'Очки набранные в турнире', default=0)
+    position =  models.PositiveIntegerField(u'Место в турнире', default=0)
 
     class Meta:
         verbose_name = u'Участник'
