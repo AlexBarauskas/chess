@@ -92,7 +92,7 @@ def generate_next_raund(request,turnir_id):
                 if w:
                     p=get_object_or_404(Participant,id=w)
                     g.winner = p
-                g.save(update_rating=True)
+ы                g.save(update_rating=True)
         get_object_or_404(Turnir,id=turnir_id).calc_next_round()
     request.session['tab']='table'
     return HttpResponseRedirect(reverse('view-turnir',args=[turnir_id]))
