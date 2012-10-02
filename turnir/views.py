@@ -89,16 +89,9 @@ def generate_next_raund(request,turnir_id):
             if key.startswith('game'):
                 w = request.POST[key]
                 g = get_object_or_404(Game,id=key.split('-')[1])
-                if not w:
-                    g.participant1.points+=0.5
-                    g.participant2.points+=0.5
-                    g.participant1.save()
-                    g.participant2.save()
-                else:
+                if w:
                     p=get_object_or_404(Participant,id=w)
                     g.winner = p
-                    p.points+=1
-                    p.save()
                 g.save(update_rating=True)
         get_object_or_404(Turnir,id=turnir_id).calc_next_round()
     request.session['tab']='table'

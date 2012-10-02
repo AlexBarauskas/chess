@@ -175,6 +175,8 @@ class Game(models.Model):
                     p2 = 1.0
                 E1 = 1.0/(1.0 + 10**((R2-R1)/400.0))
                 E2 = 1.0/(1.0 + 10**((R1-R2)/400.0))
+                self.participant1.points+=p1
+                self.participant2.points+=p2
                 self.participant1.rating = R1 + self.K(R1)*(p1 - E1)
                 self.participant2.rating = R2 + self.K(R1)*(p2 - E2)
                 self.participant1.save()
